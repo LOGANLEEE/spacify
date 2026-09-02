@@ -18,7 +18,17 @@ public enum SpatialOutputDeviceKind {
         }
     }
 
-    public static func infer(deviceName: String, deviceUID: String) -> SpatialOutputDeviceKind {
+    /// Picks the spatial profile for an output device.
+    ///
+    /// `transportType` is the device's `kAudioDevicePropertyTransportType`. Name matching
+    /// runs first because it is the more specific signal, but it cannot see a renamed
+    /// device: AirPods renamed in Settings carry no keyword in either the name or the UID
+    /// (which is just a Bluetooth MAC address). The transport type is what catches those.
+    public static func infer(
+        deviceName: String,
+        deviceUID: String,
+        transportType: UInt32? = nil
+    ) -> SpatialOutputDeviceKind {
         let haystack = "\(deviceName) \(deviceUID)".lowercased()
 
         if haystack.contains("airpods") ||
@@ -38,6 +48,17 @@ public enum SpatialOutputDeviceKind {
             return .builtInSpeakers
         }
 
-        return .externalSpeakers
+        switch transportType {
+        // ponytail: a Bluetooth *speaker* lands here too and gets the headphone profile.
+        // Bluetooth output on a Mac is overwhelmingly headphones, and the old behaviour
+        // (external speakers for every renamed pair) was wrong more often. Read the
+        // device's Bluetooth Class of Device here if that trade ever stops holding.
+        case kAudioDeviceTransportTypeBluetooth?, kAudioDeviceTransportTypeBluetoothLE?:
+            return .headphones
+        case kAudioDeviceTransportTypeBuiltIn?:
+            return .builtInSpeakers
+        default:
+            return .externalSpeakers
+        }
     }
 }

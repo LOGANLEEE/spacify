@@ -84,6 +84,16 @@ extension AudioObjectID {
         try readString(kAudioDevicePropertyDeviceUID)
     }
 
+    /// `kAudioDevicePropertyTransportType`, or nil when the device does not report one.
+    func readDeviceTransportType() -> UInt32? {
+        guard let value = try? read(kAudioDevicePropertyTransportType, defaultValue: UInt32(0)),
+              value != 0 else {
+            return nil
+        }
+
+        return value
+    }
+
     func readDeviceName() throws -> String {
         try readString(kAudioDevicePropertyDeviceNameCFString)
     }

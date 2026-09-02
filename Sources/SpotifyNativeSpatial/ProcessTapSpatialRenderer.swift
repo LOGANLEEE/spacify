@@ -96,7 +96,11 @@ final class ProcessTapSpatialRenderer {
         let outputDeviceID = try AudioObjectID.readDefaultSystemOutputDevice()
         let outputUID = try outputDeviceID.readDeviceUID()
         let outputName = (try? outputDeviceID.readDeviceName()) ?? outputUID
-        let outputKind = SpatialOutputDeviceKind.infer(deviceName: outputName, deviceUID: outputUID)
+        let outputKind = SpatialOutputDeviceKind.infer(
+            deviceName: outputName,
+            deviceUID: outputUID,
+            transportType: outputDeviceID.readDeviceTransportType()
+        )
 
         let aggregateDescription: [String: Any] = [
             kAudioAggregateDeviceNameKey: "Spacify",
