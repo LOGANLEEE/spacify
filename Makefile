@@ -7,8 +7,9 @@ EXECUTABLE := .build/release/$(TARGET_NAME)
 UNIVERSAL_EXECUTABLE := .build/apple/Products/Release/$(TARGET_NAME)
 BUNDLED_EXECUTABLE := $(APP_BUNDLE)/Contents/MacOS/$(APP_NAME)
 DIST_ZIP := $(BUILD_DIR)/$(APP_NAME).zip
+INSTALL_PATH := /Applications/$(APP_NAME).app
 
-.PHONY: build app dist run run-head run-spotify run-spotify-head list icon test clean
+.PHONY: build app dist install run run-head run-spotify run-spotify-head list icon test clean
 
 build:
 	swift build -c release
@@ -34,6 +35,12 @@ dist:
 	codesign --force --deep --sign - "$(APP_BUNDLE)"
 	ditto -c -k --keepParent "$(APP_BUNDLE)" "$(DIST_ZIP)"
 	@echo "Wrote $(DIST_ZIP) (universal)"
+
+install: app
+	@pkill -x "$(APP_NAME)" 2>/dev/null || true
+	rm -rf "$(INSTALL_PATH)"
+	cp -R "$(APP_BUNDLE)" /Applications/
+	@echo "Installed $(INSTALL_PATH). Launch it from Applications or Spotlight."
 
 run: app
 	@pkill -x "$(APP_NAME)" 2>/dev/null || true
